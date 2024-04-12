@@ -2,30 +2,32 @@
 import { CheerioCrawler, Dataset, LogLevel, log } from 'crawlee';
 
 interface Traffic {
-    trafficInfo: {label: string, value: string}[],
-    trafficMap: string
+    trafficInfo: {label: string, value: string}[];
+    trafficMap: string;
+    coordinatesMap: [number | string, number | string]
 }
 
 interface Room {
-    title: string,
-    rent: string,
-    size: string,
-    slots: {rental: string, size: string, room: string, features: string[]}[]
+    title: string;
+    rent: string;
+    size: string;
+    slots: {rental: string; size: string; room: string; features: string[]}[]
 
 }
 
 interface Result {
-    url: string,
-    title: string,
-    houseName: string,
-    address: string,
-    images: string[],
-    traffic: Traffic,
-    information: string[],
-    publicServices: {label: string, value: string}[],
-    schools: {label: string, value: string}[],
-    rooms: Room[],
+    url: string;
+    title: string;
+    houseName: string;
+    address: string;
+    images: string[];
+    traffic: Traffic;
+    information: string[];
+    publicServices: {label: string; value: string}[];
+    schools: {label: string; value: string}[];
+    rooms: Room[];
     telephone: string;
+    crawledAt: string;
 }
 
 const startUrls = ['https://www.villagehouse.jp/vi/thue/hokkaido/hokkaido/sapporo-shi-011002/sakuradai-1063/', 'https://www.villagehouse.jp/vi/thue/hokkaido/hokkaido/sapporo-shi-011002/higashi-tsukisamu-1034/'];
@@ -72,7 +74,7 @@ const crawler = new CheerioCrawler({
             }
         }).get();
         const trafficMap = $(".container-information-traffic-right img").attr('src');
-
+        const coordinatesMap = new URL(trafficMap!).searchParams.get("center")?.split(',');
 
         // house information 
         const houseInfoElem = $(".container-information-summary-item");
@@ -132,8 +134,6 @@ const crawler = new CheerioCrawler({
 
         const telephone = $(".container-contact-bottom-telephone .container-contact-bottom-telephone-number").text();
 
-
-
         const result = {
             url: request.url,
             title,
@@ -142,14 +142,17 @@ const crawler = new CheerioCrawler({
             images,
             traffic: {
                 trafficInfo,
-                trafficMap
+                trafficMap,
+                coordinatesMap
             },
             information,
             publicServices,
             schools,
             rooms,
-            telephone
-        } as Result
+            telephone,
+            crawledAt: new Date().toISOString()
+        } as Result;
+
 
         results.push(result);
 
@@ -179,6 +182,6 @@ await crawler.run(startUrls);
 log.debug('Crawler finished.');
 
 // do something with the results
-console.log(results)
+// console.log(results)
 
 
